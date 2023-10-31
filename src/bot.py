@@ -19,7 +19,7 @@ def run_discord_bot():
         logger.info(f'{client.user} is now running!')
 
 
-    @client.tree.command(name="chat", description="Have a chat with ChatGPT")
+    @client.tree.command(name="chat", description="chat")
     async def chat(interaction: discord.Interaction, *, message: str):
         if client.is_replying_all == "True":
             await interaction.response.defer(ephemeral=False)
@@ -320,19 +320,15 @@ gpt-engine: {chat_engine_status}
 
     @client.event
     async def on_message(message):
-        if client.is_replying_all == "True":
-            if message.author == client.user:
-                return
-            if client.replying_all_discord_channel_id:
-                if message.channel.id == int(client.replying_all_discord_channel_id):
-                    username = str(message.author)
-                    user_message = str(message.content)
-                    client.current_channel = message.channel
-                    logger.info(f"\x1b[31m{username}\x1b[0m : '{user_message}' ({client.current_channel})")
-
-                    await client.enqueue_message(message, user_message)
-            else:
-                logger.exception("replying_all_discord_channel_id not found, please use the command `/replyall` again.")
+        if message.author == client.user:
+            return
+        else:
+            username = str(message.author)
+            user_message = str(message.content)
+            client.current_channel = message.channel
+            logger.info(f"\x1b[31m{username}\x1b[0m : '{user_message}' ({client.current_channel})")
+            await client.enqueue_message(message, user_message)
+            #logger.exception("replying_all_discord_channel_id not found, please use the command `/replyall` again.")
 
     TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 
