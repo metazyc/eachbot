@@ -7,7 +7,7 @@ from typing import Union
 from src import responses
 from src.log import logger
 from auto_login.AutoLogin import GoogleBardAutoLogin, MicrosoftBingAutoLogin
-from utils.message_utils import send_split_message, send_response_with_images
+from utils.message_utils import send_split_message, send_response_with_images,send_predefined_message
 
 from dotenv import load_dotenv
 from discord import app_commands
@@ -98,7 +98,7 @@ class aclient(discord.Client):
 
 
     async def enqueue_message(self, message, user_message):
-        await message.response.defer(ephemeral=self.isPrivate) if self.is_replying_all == "False" else None
+        #await message.response.defer(ephemeral=self.isPrivate) if self.is_replying_all == "False" else None
         await self.message_queue.put((message, user_message))
 
     async def send_message(self, message, user_message):
@@ -107,23 +107,27 @@ class aclient(discord.Client):
         else:
             author = message.author.id
         try:
-            response = (f'> **{user_message}** - <@{str(author)}> \n\n')
-            if self.chat_model == "OFFICIAL":
-                response = f"{response}{await responses.official_handle_response(user_message, self)}"
-                await send_split_message(self, response, message)
-            elif self.chat_model == "UNOFFICIAL":
-                response = f"{response}{await responses.unofficial_handle_response(user_message, self)}"
-                await send_split_message(self, response, message)
-            elif self.chat_model == "Bard":
-                if self.is_replying_all == "True":
-                    await message.channel.send(response)
-                else:
-                    await message.followup.send(response)
-                response = await responses.bard_handle_response(user_message, self)
-                await send_response_with_images(self, response, message)
-            elif self.chat_model == "Bing":
-                response = f"{response}{await responses.bing_handle_response(user_message, self)}"
-                await send_split_message(self, response, message)
+            if user_message.startswith("gpt"):
+                response = (f'> **{user_message}** - <@{str(author)}> \n\n')
+                user_message = user_message[3:]
+                if self.chat_model == "OFFICIAL":
+                    response = f"{response}{await responses.official_handle_response(user_message, self)}"
+                    await send_split_message(self, response, message)
+                elif self.chat_model == "UNOFFICIAL":
+                    response = f"{response}{await responses.unofficial_handle_response(user_message, self)}"
+                    await send_split_message(self, response, message)
+                elif self.chat_model == "Bard":
+                    if self.is_replying_all == "True":
+                        await message.channel.send(response)
+                    else:
+                        await message.followup.send(response)
+                    response = await responses.bard_handle_response(user_message, self)
+                    await send_response_with_images(self, response, message)
+                elif self.chat_model == "Bing":
+                    response = f"{response}{await responses.bing_handle_response(user_message, self)}"
+                    await send_split_message(self, response, message)
+            else:
+                await send_predefined_message(self, message)
         except Exception as e:
             logger.exception(f"Error while sending : {e}")
             if self.is_replying_all == "True":

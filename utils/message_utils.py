@@ -48,3 +48,17 @@ async def send_response_with_images(self, response: dict, message: Message):
 
         if response_images and i < len(response_images):
             await send_split_message(self, response_images[i].strip(), message, has_followed_up=True)
+
+async def send_predefined_message(self, message: Message):
+    if message.author.id == 680139682121908239:
+        await message.channel.send(f"波波别叫！")
+    elif message.author.id == 675118832632987707:
+        await message.channel.send(f"傻犬别叫！")
+    elif message.author.id == 437185745145561099:
+        await message.channel.send(f"流浪汉别叫！")
+    elif message.author.id == 725424994666020894:
+        await message.channel.send(f"大象别叫！")
+    #elif message.author.id == 424950947379150848:
+    #    await message.channel.send(f"对对对！")
+    else:
+        await message.channel.send(f"看简介，素质不高，别叫！")
